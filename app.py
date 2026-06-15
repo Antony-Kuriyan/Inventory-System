@@ -101,162 +101,134 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-    /* Global Body styling - Light Slate/Time:minder Theme */
+    /* Global Body styling */
     html, body, [class*="css"], .stApp {
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        background-color: #f6f8fa !important;
-        color: #1e293b !important;
-    }
-
-    /* Main Container Padding */
-    .block-container {
-        padding-left: 3rem !important;
-        padding-right: 3rem !important;
-        padding-top: 2.5rem !important;
+        background: radial-gradient(circle at 10% 20%, #0f172a 0%, #020617 90%) !important;
+        color: #f1f5f9 !important;
     }
 
     /* Top main title styling */
     h1 {
-        color: #0f172a !important;
+        background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
         font-weight: 800 !important;
         letter-spacing: -0.03em !important;
         padding-bottom: 15px !important;
         margin-bottom: 25px !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-        background: none !important;
-        -webkit-text-fill-color: initial !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
     /* Subheaders */
     h2, h3 {
-        color: #0f172a !important;
+        color: #f8fafc !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em !important;
         margin-top: 20px !important;
         margin-bottom: 15px !important;
     }
 
-    /* Sidebar background matching the Time:minder app */
+    /* Sidebar visual configuration */
     section[data-testid="stSidebar"] {
-        background-color: #eff1f4 !important;
-        border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
-        box-shadow: none !important;
+        background-color: rgba(15, 23, 42, 0.95) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5) !important;
     }
 
-    /* Sidebar title or logo container */
-    .sidebar-logo {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        color: #818cf8 !important;
+        letter-spacing: -0.01em !important;
     }
 
-    /* Sidebar Status Box (similar to dribbble shot box in the image) */
-    .sidebar-status-box {
-        background: #9fa6b5;
-        border-radius: 12px;
-        padding: 16px;
-        color: #ffffff;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-    }
-
-    /* Sidebar Radio Navigation as custom clean vertical links */
-    div[data-testid="stSidebar"] [data-testid="stRadio"] > label {
-        display: none !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
-        gap: 8px !important;
-        padding-top: 10px !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label {
-        background: transparent !important;
-        border: 1px solid transparent !important;
-        border-radius: 10px !important;
+    /* Style sidebar buttons as tab menu items */
+    section[data-testid="stSidebar"] div.stButton button {
+        text-align: left !important;
+        justify-content: flex-start !important;
         padding: 12px 18px !important;
         width: 100% !important;
-        transition: all 0.2s ease !important;
-        cursor: pointer !important;
-        margin-bottom: 0px !important;
-        display: flex !important;
-        align-items: center !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:hover {
-        background: rgba(0, 0, 0, 0.02) !important;
-        transform: none !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label div[data-testid="stWidgetLabel"] > div:first-child {
-        display: none !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label [data-testid="stMarkdownContainer"] p {
-        color: #556070 !important;
-        font-weight: 500 !important;
+        margin-bottom: 8px !important;
         font-size: 0.95rem !important;
-    }
-    
-    /* Active State matching white card with shadow */
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] {
-        background: #ffffff !important;
-        border: 1px solid rgba(0, 0, 0, 0.03) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02) !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] [data-testid="stMarkdownContainer"] p {
-        color: #0f172a !important;
-        font-weight: 600 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    /* Form container style as white card */
+    /* Unselected sidebar button styling */
+    section[data-testid="stSidebar"] div.stButton button[kind="secondary"] {
+        background-color: rgba(30, 41, 59, 0.5) !important;
+        color: #cbd5e1 !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        box-shadow: none !important;
+    }
+    section[data-testid="stSidebar"] div.stButton button[kind="secondary"]:hover {
+        background-color: rgba(99, 102, 241, 0.15) !important;
+        border-color: rgba(99, 102, 241, 0.3) !important;
+        color: #ffffff !important;
+    }
+
+    /* Selected sidebar button styling */
+    section[data-testid="stSidebar"] div.stButton button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
+    }
+
+    /* Form container style */
     div[data-testid="stForm"] {
-        background: #ffffff !important;
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        background: rgba(30, 41, 59, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
         border-radius: 16px !important;
         padding: 30px !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.015), 0 1px 3px rgba(0, 0, 0, 0.005) !important;
+        backdrop-filter: blur(12px) !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
         margin-top: 15px;
     }
 
-    /* Custom input/select formatting for light theme */
+    /* Custom input/select formatting */
     div[data-baseweb="input"], div[data-baseweb="select"], .stNumberInput input, textarea {
-        background-color: #fcfdfe !important;
-        border: 1px solid #e2e8f0 !important;
+        background-color: #0f172a !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
         border-radius: 10px !important;
-        color: #0f172a !important;
-        transition: all 0.25s ease !important;
+        color: #f8fafc !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {
-        border-color: #94a3b8 !important;
-        box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.12) !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
     }
 
     /* Form label font weights */
     label, [data-testid="stWidgetLabel"] {
         font-weight: 600 !important;
-        color: #475569 !important;
+        color: #cbd5e1 !important;
         font-size: 0.92rem !important;
         margin-bottom: 8px !important;
     }
 
-    /* Button styles (dark slate button like in the image) */
-    button[kind="secondaryFormSubmit"], button[kind="primary"], button[data-testid="baseButton-secondary"] {
-        background: #0f172a !important;
+    /* Form submit / standard button styles */
+    button[kind="secondaryFormSubmit"], button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
         border: none !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
         border-radius: 10px !important;
         padding: 10px 24px !important;
-        transition: all 0.2s ease !important;
-        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
         width: auto !important;
     }
 
-    button[kind="secondaryFormSubmit"]:hover, button[kind="primary"]:hover, button[data-testid="baseButton-secondary"]:hover {
-        background: #1e293b !important;
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18) !important;
-        transform: translateY(-1px) !important;
+    button[kind="secondaryFormSubmit"]:hover, button[kind="primary"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5) !important;
+        filter: brightness(1.1) !important;
+    }
+
+    button[kind="secondaryFormSubmit"]:active, button[kind="primary"]:active {
+        transform: translateY(0) !important;
     }
 
     /* Tabs formatting */
@@ -269,54 +241,58 @@ st.markdown("""
     }
 
     button[data-baseweb="tab"][aria-selected="true"] {
-        color: #0f172a !important;
-        border-bottom-color: #0f172a !important;
+        color: #818cf8 !important;
+        border-bottom-color: #818cf8 !important;
+    }
+
+    button[data-baseweb="tab"]:hover {
+        color: #cbd5e1 !important;
     }
 
     /* Alerts and notifications */
     div[data-testid="stNotification"] {
         border-radius: 10px !important;
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015) !important;
-        background-color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(8px) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
     }
 
     div[data-testid="stNotification"] [data-testid="stNotificationContentSuccess"] {
-        background-color: rgba(16, 185, 129, 0.04) !important;
+        background-color: rgba(16, 185, 129, 0.08) !important;
         border-left: 4px solid #10b981 !important;
-        color: #065f46 !important;
+        color: #34d399 !important;
     }
 
     /* Styled dataframes */
     div[data-testid="stDataFrame"] {
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
         border-radius: 12px !important;
         overflow: hidden !important;
-        background-color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015) !important;
+        background-color: rgba(30, 41, 59, 0.3) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
     }
 
     /* Detail & Photo Viewer Layout styles */
     .viewer-card {
-        background: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.05);
+        background: rgba(30, 41, 59, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 16px;
         padding: 24px;
         margin-top: 15px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
     }
     
     /* Image frames */
     div[data-testid="stImage"] img {
         border-radius: 12px !important;
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4) !important;
     }
     
     /* Checkbox labels style */
     div[data-testid="stCheckbox"] label {
         font-weight: 500 !important;
-        color: #475569 !important;
+        color: #cbd5e1 !important;
     }
 
     /* Mobile Responsive Optimizations */
@@ -331,6 +307,7 @@ st.markdown("""
             font-size: 1.8rem !important;
             padding-bottom: 8px !important;
             margin-bottom: 15px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
         }
         h2 {
             font-size: 1.4rem !important;
@@ -356,34 +333,28 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar Header Logo & Status Box (matching Time:minder theme)
-st.sidebar.markdown("""
-<div class="sidebar-logo">
-    <span style="font-size: 1.5rem;">⏱️</span>
-    <span><strong>Inventory:</strong>minder</span>
-</div>
-<div class="sidebar-status-box">
-    <div style="font-size: 0.8rem; opacity: 0.85; margin-bottom: 4px; font-weight: 500;">Active Session</div>
-    <div style="font-size: 1.15rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
-        <span>System Sync</span>
-        <span style="background: #ffffff; color: #9fa6b5; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: default;">II</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
 st.title("📦 Advanced Inventory Management System")
 
-# Sidebar Navigation
-menu = ["📋 View Inventory", "➕ Add / Delete Stock Item", "🔄 Stock Transfer Journal"]
-choice_raw = st.sidebar.radio("Navigation Menu", menu)
+# Initialize session state for navigation
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "View Inventory"
 
-# Map choices back to the original layout names
-choice_map = {
-    "📋 View Inventory": "View Inventory",
-    "➕ Add / Delete Stock Item": "Add / Delete Stock Item",
-    "🔄 Stock Transfer Journal": "Stock Transfer Journal"
-}
-choice = choice_map[choice_raw]
+st.sidebar.markdown("<p style='font-size: 1.1rem; font-weight: 700; color: #818cf8; margin-bottom: 15px;'>Navigation Menu</p>", unsafe_allow_html=True)
+
+# Sidebar Buttons Navigation (Stateful)
+if st.sidebar.button("📋 View Inventory", use_container_width=True, type="primary" if st.session_state.current_page == "View Inventory" else "secondary"):
+    st.session_state.current_page = "View Inventory"
+    st.rerun()
+
+if st.sidebar.button("➕ Add / Delete Stock Item", use_container_width=True, type="primary" if st.session_state.current_page == "Add / Delete Stock Item" else "secondary"):
+    st.session_state.current_page = "Add / Delete Stock Item"
+    st.rerun()
+
+if st.sidebar.button("🔄 Stock Transfer Journal", use_container_width=True, type="primary" if st.session_state.current_page == "Stock Transfer Journal" else "secondary"):
+    st.session_state.current_page = "Stock Transfer Journal"
+    st.rerun()
+
+choice = st.session_state.current_page
 
 # --- 1. VIEW INVENTORY ---
 if choice == "View Inventory":
