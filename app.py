@@ -10,16 +10,47 @@ def init_db():
     conn = sqlite3.connect('inventory.db')
     c = conn.cursor()
     
-    # Stock Items Table
+    # Schema Migration: Remove UNIQUE constraint on part_number, making it UNIQUE(part_number, warehouse, bin_location)
+    c.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='items'")
+    row = c.fetchone()
+    if row:
+        table_sql = row[0]
+        if "UNIQUE" in table_sql and "part_number" in table_sql and "UNIQUE(part_number" not in table_sql:
+            try:
+                # 1. Create a temporary table with the new schema
+                c.execute('''
+                    CREATE TABLE IF NOT EXISTS items_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        part_number TEXT NOT NULL,
+                        item_name TEXT NOT NULL,
+                        warehouse TEXT NOT NULL,
+                        bin_location TEXT NOT NULL,
+                        quantity INTEGER DEFAULT 0,
+                        image BLOB,
+                        UNIQUE(part_number, warehouse, bin_location)
+                    )
+                ''')
+                # 2. Copy data
+                c.execute('INSERT INTO items_new (id, part_number, item_name, warehouse, bin_location, quantity, image) SELECT id, part_number, item_name, warehouse, bin_location, quantity, image FROM items')
+                # 3. Drop old table
+                c.execute('DROP TABLE items')
+                # 4. Rename temporary table
+                c.execute('ALTER TABLE items_new RENAME TO items')
+                conn.commit()
+            except Exception as e:
+                pass
+
+    # Stock Items Table (with composite UNIQUE constraint)
     c.execute('''
         CREATE TABLE IF NOT EXISTS items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            part_number TEXT UNIQUE NOT NULL,
+            part_number TEXT NOT NULL,
             item_name TEXT NOT NULL,
             warehouse TEXT NOT NULL,
             bin_location TEXT NOT NULL,
             quantity INTEGER DEFAULT 0,
-            image BLOB
+            image BLOB,
+            UNIQUE(part_number, warehouse, bin_location)
         )
     ''')
     
@@ -320,25 +351,38 @@ if choice == "View Inventory":
         # Detail & Photo Viewer Row
         st.markdown("---")
         st.subheader("🖼️ Item Details & Photo Viewer")
-        selected_part = st.selectbox("Select a Part Number to view its photo:", df['part_number'].tolist())
+        selected_part = st.selectbox("Select a Part Number to view details & photo:", df['part_number'].unique().tolist())
         
         if selected_part:
             c = conn.cursor()
-            c.execute("SELECT image, item_name, warehouse, bin_location FROM items WHERE part_number = ?", (selected_part,))
-            row = c.fetchone()
+            c.execute("SELECT image, item_name, warehouse, bin_location, quantity FROM items WHERE part_number = ?", (selected_part,))
+            rows = c.fetchall()
             
-            if row and row[0]:
-                image_data = row[0]
-                image = Image.open(io.BytesIO(image_data))
+            if rows:
+                image_data = None
+                for r in rows:
+                    if r[0]:
+                        image_data = r[0]
+                        break
+                
                 col1, col2 = st.columns([1, 2])
                 with col1:
-                    st.image(image, caption=f"{row[1]} ({selected_part})", use_container_width=True)
+                    if image_data:
+                        image = Image.open(io.BytesIO(image_data))
+                        st.image(image, caption=f"{rows[0][1]} ({selected_part})", use_container_width=True)
+                    else:
+                        st.warning("No photo available for this item.")
                 with col2:
-                    st.write(f"**Item Name:** {row[1]}")
-                    st.write(f"**Warehouse Location:** {row[2]}")
-                    st.write(f"**Bin Location:** {row[3]}")
-            else:
-                st.warning("No photo available for this item.")
+                    st.write(f"**Item Name:** {rows[0][1]}")
+                    total_qty = sum(r[4] for r in rows)
+                    st.write(f"**Total Stock Across All Locations:** `{total_qty}`")
+                    st.write("**Location Breakdown:**")
+                    
+                    loc_df = pd.DataFrame([
+                        {"Warehouse": r[2], "Bin Location": r[3], "Quantity": r[4]}
+                        for r in rows
+                    ])
+                    st.table(loc_df)
     conn.close()
 
 # --- 2. ADD / DELETE STOCK ITEM ---
@@ -348,7 +392,7 @@ elif choice == "Add / Delete Stock Item":
     with tab1:
         st.header("Add Stock Item")
         with st.form("add_form", clear_on_submit=True):
-            part_number = st.text_input("Part Number (Must be unique)*")
+            part_number = st.text_input("Part Number (e.g., P-100)*")
             item_name = st.text_input("Item Name*")
             warehouse = st.text_input("Warehouse Name/Code (e.g., WH-Alpha)*")
             bin_location = st.text_input("Bin Location (e.g., Row-A, Bin-12)*")
@@ -368,14 +412,34 @@ elif choice == "Add / Delete Stock Item":
                     conn = get_db_connection()
                     c = conn.cursor()
                     try:
-                        c.execute('''
-                            INSERT INTO items (part_number, item_name, warehouse, bin_location, quantity, image)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        ''', (part_number, item_name, warehouse, bin_location, quantity, img_bytes))
+                        # Check if this part number already exists in this specific location
+                        c.execute("SELECT id, quantity, image FROM items WHERE part_number = ? AND warehouse = ? AND bin_location = ?", (part_number, warehouse, bin_location))
+                        existing_loc = c.fetchone()
+                        
+                        if existing_loc:
+                            # Update quantity and optionally update image if new one is uploaded
+                            new_qty = existing_loc[1] + quantity
+                            if img_bytes:
+                                c.execute("UPDATE items SET quantity = ?, image = ?, item_name = ? WHERE id = ?", (new_qty, img_bytes, item_name, existing_loc[0]))
+                            else:
+                                c.execute("UPDATE items SET quantity = ?, item_name = ? WHERE id = ?", (new_qty, item_name, existing_loc[0]))
+                            st.success(f"Successfully updated stock for '{item_name}' at {warehouse} ({bin_location}). New total: {new_qty}!")
+                        else:
+                            # If no image uploaded, check if image exists in other locations of the same part
+                            if not img_bytes:
+                                c.execute("SELECT image FROM items WHERE part_number = ? AND image IS NOT NULL LIMIT 1", (part_number,))
+                                other_img = c.fetchone()
+                                if other_img:
+                                    img_bytes = other_img[0]
+                                    
+                            c.execute('''
+                                INSERT INTO items (part_number, item_name, warehouse, bin_location, quantity, image)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                            ''', (part_number, item_name, warehouse, bin_location, quantity, img_bytes))
+                            st.success(f"Successfully added '{item_name}' into inventory at {warehouse} ({bin_location})!")
                         conn.commit()
-                        st.success(f"Successfully added '{item_name}' into inventory!")
-                    except sqlite3.IntegrityError:
-                        st.error(f"Part Number '{part_number}' already exists! Try searching or updating instead.")
+                    except Exception as e:
+                        st.error(f"Error saving item: {str(e)}")
                     finally:
                         conn.close()
                         
@@ -455,16 +519,30 @@ elif choice == "Add / Delete Stock Item":
                                 continue
                                 
                             try:
-                                c.execute('''
-                                    INSERT INTO items (part_number, item_name, warehouse, bin_location, quantity, image)
-                                    VALUES (?, ?, ?, ?, ?, ?)
-                                ''', (p_num, i_name, wh, bin_loc, qty, None))
-                                success_count += 1
-                            except sqlite3.IntegrityError:
+                                # Check if this part number already exists in this location
+                                c.execute("SELECT id, quantity FROM items WHERE part_number = ? AND warehouse = ? AND bin_location = ?", (p_num, wh, bin_loc))
+                                existing_loc = c.fetchone()
+                                
+                                if existing_loc:
+                                    # Update quantity
+                                    c.execute("UPDATE items SET quantity = ? WHERE id = ?", (existing_loc[1] + qty, existing_loc[0]))
+                                    success_count += 1
+                                else:
+                                    # Try to fetch existing image for this part number from other locations
+                                    c.execute("SELECT image FROM items WHERE part_number = ? AND image IS NOT NULL LIMIT 1", (p_num,))
+                                    other_img = c.fetchone()
+                                    img_val = other_img[0] if other_img else None
+                                    
+                                    c.execute('''
+                                        INSERT INTO items (part_number, item_name, warehouse, bin_location, quantity, image)
+                                        VALUES (?, ?, ?, ?, ?, ?)
+                                    ''', (p_num, i_name, wh, bin_loc, qty, img_val))
+                                    success_count += 1
+                            except Exception as e:
                                 skipped_items.append({
                                     "part_number": p_num,
                                     "item_name": i_name,
-                                    "reason": "Part Number already exists"
+                                    "reason": str(e)
                                 })
                                 
                         conn.commit()
@@ -484,22 +562,22 @@ elif choice == "Add / Delete Stock Item":
         st.header("Delete Item")
         conn = get_db_connection()
         c = conn.cursor()
-        c.execute("SELECT part_number, item_name FROM items")
-        item_list = [f"{row[0]} - {row[1]}" for row in c.fetchall()]
+        c.execute("SELECT id, part_number, item_name, warehouse, bin_location, quantity FROM items")
+        item_list = [f"{row[1]} - {row[2]} (Wh: {row[3]} / Bin: {row[4]}) | Stock: {row[5]} | ID: {row[0]}" for row in c.fetchall()]
         
         if not item_list:
             st.info("No items available to delete.")
         else:
-            selected_item_to_delete = st.selectbox("Select Item to completely remove:", item_list)
-            delete_part_no = selected_item_to_delete.split(" - ")[0]
+            selected_item_to_delete = st.selectbox("Select Item Location to completely remove:", item_list)
+            delete_id = int(selected_item_to_delete.split(" | ID: ")[-1])
             
-            confirm_delete = st.checkbox("I confirm I want to permanently delete this item and its records.")
+            confirm_delete = st.checkbox("I confirm I want to permanently delete this item location and its records.")
             
             if st.button("Delete Item Permanently", type="primary"):
                 if confirm_delete:
-                    c.execute("DELETE FROM items WHERE part_number = ?", (delete_part_no,))
+                    c.execute("DELETE FROM items WHERE id = ?", (delete_id,))
                     conn.commit()
-                    st.success(f"Item {delete_part_no} successfully removed.")
+                    st.success("Item location successfully removed.")
                     st.rerun()
                 else:
                     st.error("Please check the confirmation box before deleting.")
@@ -518,21 +596,28 @@ elif choice == "Stock Transfer Journal":
         st.subheader("Move Stock Between Warehouse / Bins")
         
         # Fetch existing items for transfer dropdown
-        c.execute("SELECT part_number, item_name, warehouse, bin_location, quantity FROM items")
+        c.execute("SELECT id, part_number, item_name, warehouse, bin_location, quantity, image FROM items")
         items_pool = c.fetchall()
-        transfer_list = [f"{r[0]} | {r[1]} (Wh: {r[2]} / Bin: {r[3]}) | Stock: {r[4]}" for r in items_pool]
         
-        if not transfer_list:
+        if not items_pool:
             st.info("No stock available to transfer.")
         else:
-            selected_stock = st.selectbox("Select Item to Transfer:", transfer_list)
+            selected_item = st.selectbox(
+                "Select Item to Transfer:",
+                items_pool,
+                format_func=lambda r: f"{r[1]} | {r[2]} (Wh: {r[3]} / Bin: {r[4]}) | Stock: {r[5]}"
+            )
             
             # Extract basic selected item info
-            sel_part_no = selected_stock.split(" | ")[0]
-            c.execute("SELECT item_name, warehouse, bin_location, quantity FROM items WHERE part_number = ?", (sel_part_no,))
-            source_item = c.fetchone()
+            source_item_id = selected_item[0]
+            sel_part_no = selected_item[1]
+            source_item_name = selected_item[2]
+            from_warehouse = selected_item[3]
+            from_bin = selected_item[4]
+            source_item_qty = selected_item[5]
+            source_item_image = selected_item[6]
             
-            st.markdown(f"**Current Allocation:** Warehouse: `{source_item[1]}` | Bin Location: `{source_item[2]}`")
+            st.markdown(f"**Current Allocation:** Warehouse: `{from_warehouse}` | Bin Location: `{from_bin}`")
             
             # Auto-calculate sequential voucher number for today
             today_date_str = datetime.now().strftime("%Y%m%d")
@@ -548,11 +633,13 @@ elif choice == "Stock Transfer Journal":
                 to_warehouse = st.text_input("Destination Warehouse*")
                 to_bin = st.text_input("Destination Bin Location*")
             with col2:
-                transfer_qty = st.number_input("Quantity to Transfer", min_value=1, max_value=int(source_item[3]), step=1)
+                transfer_qty = st.number_input("Quantity to Transfer", min_value=1, max_value=int(source_item_qty), step=1)
                 
             if st.button("Post Transfer Journal"):
                 if not to_warehouse or not to_bin:
                     st.error("Destination Warehouse and Bin Location are mandatory.")
+                elif to_warehouse.strip() == from_warehouse and to_bin.strip() == from_bin:
+                    st.error("Destination location cannot be the same as the source location.")
                 else:
                     # Execute Transfer Transaction
                     today_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -561,20 +648,26 @@ elif choice == "Stock Transfer Journal":
                     c.execute('''
                         INSERT INTO transfer_journal (voucher_number, part_number, item_name, from_warehouse, from_bin, to_warehouse, to_bin, quantity, transfer_date)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''', (next_voucher, sel_part_no, source_item[0], source_item[1], source_item[2], to_warehouse, to_bin, transfer_qty, today_str))
+                    ''', (next_voucher, sel_part_no, source_item_name, from_warehouse, from_bin, to_warehouse, to_bin, transfer_qty, today_str))
                     
-                    # 2. Update existing entry location details or deduct quantity
-                    if transfer_qty == source_item[3]:
-                        # If moving full stock, update its current destination row directly
-                        c.execute('''
-                            UPDATE items SET warehouse = ?, bin_location = ? WHERE part_number = ?
-                        ''', (to_warehouse, to_bin, sel_part_no))
+                    # 2. Update source row quantity
+                    new_source_qty = source_item_qty - transfer_qty
+                    if new_source_qty == 0:
+                        c.execute("DELETE FROM items WHERE id = ?", (source_item_id,))
                     else:
-                        # Deduct part of it and create/update destination (Simplified for strict 1 item/1 part schema requirement)
-                        # We change the location metadata to target and safely keep the remainder conceptually logged in history.
+                        c.execute("UPDATE items SET quantity = ? WHERE id = ?", (new_source_qty, source_item_id))
+                        
+                    # 3. Insert or update target row
+                    c.execute("SELECT id, quantity FROM items WHERE part_number = ? AND warehouse = ? AND bin_location = ?", (sel_part_no, to_warehouse, to_bin))
+                    dest_row = c.fetchone()
+                    
+                    if dest_row:
+                        c.execute("UPDATE items SET quantity = ? WHERE id = ?", (dest_row[1] + transfer_qty, dest_row[0]))
+                    else:
                         c.execute('''
-                            UPDATE items SET warehouse = ?, bin_location = ?, quantity = (quantity - ?) WHERE part_number = ?
-                        ''', (to_warehouse, to_bin, transfer_qty, sel_part_no))
+                            INSERT INTO items (part_number, item_name, warehouse, bin_location, quantity, image)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        ''', (sel_part_no, source_item_name, to_warehouse, to_bin, transfer_qty, source_item_image))
                         
                     conn.commit()
                     st.success(f"Journal Posted! Moved {transfer_qty} units of {sel_part_no} to {to_warehouse} ({to_bin}). Voucher: {next_voucher}")
