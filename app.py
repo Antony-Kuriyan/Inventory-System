@@ -101,109 +101,162 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-    /* Global Body styling */
+    /* Global Body styling - Light Slate/Time:minder Theme */
     html, body, [class*="css"], .stApp {
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        background: radial-gradient(circle at 10% 20%, #0f172a 0%, #020617 90%) !important;
-        color: #f1f5f9 !important;
+        background-color: #f6f8fa !important;
+        color: #1e293b !important;
+    }
+
+    /* Main Container Padding */
+    .block-container {
+        padding-left: 3rem !important;
+        padding-right: 3rem !important;
+        padding-top: 2.5rem !important;
     }
 
     /* Top main title styling */
     h1 {
-        background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
+        color: #0f172a !important;
         font-weight: 800 !important;
         letter-spacing: -0.03em !important;
         padding-bottom: 15px !important;
         margin-bottom: 25px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
     }
 
     /* Subheaders */
     h2, h3 {
-        color: #f8fafc !important;
+        color: #0f172a !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em !important;
         margin-top: 20px !important;
         margin-bottom: 15px !important;
     }
 
-    /* Sidebar visual configuration */
+    /* Sidebar background matching the Time:minder app */
     section[data-testid="stSidebar"] {
-        background-color: rgba(15, 23, 42, 0.95) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5) !important;
+        background-color: #eff1f4 !important;
+        border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
+        box-shadow: none !important;
     }
 
-    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
-        font-size: 1.1rem !important;
-        font-weight: 700 !important;
-        color: #818cf8 !important;
-        letter-spacing: -0.01em !important;
+    /* Sidebar title or logo container */
+    .sidebar-logo {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    /* Sidebar Selectbox */
-    section[data-testid="stSidebar"] div[data-baseweb="select"] {
-        border-radius: 8px !important;
-        background-color: #1e293b !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* Sidebar Status Box (similar to dribbble shot box in the image) */
+    .sidebar-status-box {
+        background: #9fa6b5;
+        border-radius: 12px;
+        padding: 16px;
+        color: #ffffff;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
     }
 
-    /* Form container style */
+    /* Sidebar Radio Navigation as custom clean vertical links */
+    div[data-testid="stSidebar"] [data-testid="stRadio"] > label {
+        display: none !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
+        gap: 8px !important;
+        padding-top: 10px !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label {
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        border-radius: 10px !important;
+        padding: 12px 18px !important;
+        width: 100% !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        margin-bottom: 0px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:hover {
+        background: rgba(0, 0, 0, 0.02) !important;
+        transform: none !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label div[data-testid="stWidgetLabel"] > div:first-child {
+        display: none !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label [data-testid="stMarkdownContainer"] p {
+        color: #556070 !important;
+        font-weight: 500 !important;
+        font-size: 0.95rem !important;
+    }
+    
+    /* Active State matching white card with shadow */
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] {
+        background: #ffffff !important;
+        border: 1px solid rgba(0, 0, 0, 0.03) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] [data-testid="stMarkdownContainer"] p {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+
+    /* Form container style as white card */
     div[data-testid="stForm"] {
-        background: rgba(30, 41, 59, 0.4) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
         border-radius: 16px !important;
         padding: 30px !important;
-        backdrop-filter: blur(12px) !important;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.015), 0 1px 3px rgba(0, 0, 0, 0.005) !important;
         margin-top: 15px;
     }
 
-    /* Custom input/select formatting */
+    /* Custom input/select formatting for light theme */
     div[data-baseweb="input"], div[data-baseweb="select"], .stNumberInput input, textarea {
-        background-color: #0f172a !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        background-color: #fcfdfe !important;
+        border: 1px solid #e2e8f0 !important;
         border-radius: 10px !important;
-        color: #f8fafc !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        color: #0f172a !important;
+        transition: all 0.25s ease !important;
     }
 
     div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
+        border-color: #94a3b8 !important;
+        box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.12) !important;
     }
 
     /* Form label font weights */
     label, [data-testid="stWidgetLabel"] {
         font-weight: 600 !important;
-        color: #cbd5e1 !important;
+        color: #475569 !important;
         font-size: 0.92rem !important;
         margin-bottom: 8px !important;
     }
 
-    /* Button styles */
+    /* Button styles (dark slate button like in the image) */
     button[kind="secondaryFormSubmit"], button[kind="primary"], button[data-testid="baseButton-secondary"] {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+        background: #0f172a !important;
         color: #ffffff !important;
         border: none !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
         border-radius: 10px !important;
         padding: 10px 24px !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35) !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1) !important;
         width: auto !important;
     }
 
     button[kind="secondaryFormSubmit"]:hover, button[kind="primary"]:hover, button[data-testid="baseButton-secondary"]:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5) !important;
-        filter: brightness(1.1) !important;
-    }
-
-    button[kind="secondaryFormSubmit"]:active, button[kind="primary"]:active {
-        transform: translateY(0) !important;
+        background: #1e293b !important;
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18) !important;
+        transform: translateY(-1px) !important;
     }
 
     /* Tabs formatting */
@@ -216,116 +269,54 @@ st.markdown("""
     }
 
     button[data-baseweb="tab"][aria-selected="true"] {
-        color: #818cf8 !important;
-        border-bottom-color: #818cf8 !important;
-    }
-
-    button[data-baseweb="tab"]:hover {
-        color: #cbd5e1 !important;
+        color: #0f172a !important;
+        border-bottom-color: #0f172a !important;
     }
 
     /* Alerts and notifications */
     div[data-testid="stNotification"] {
         border-radius: 10px !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        backdrop-filter: blur(8px) !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015) !important;
+        background-color: #ffffff !important;
     }
 
     div[data-testid="stNotification"] [data-testid="stNotificationContentSuccess"] {
-        background-color: rgba(16, 185, 129, 0.08) !important;
+        background-color: rgba(16, 185, 129, 0.04) !important;
         border-left: 4px solid #10b981 !important;
-        color: #34d399 !important;
-    }
-
-    div[data-testid="stNotification"] [data-testid="stNotificationContentInfo"] {
-        background-color: rgba(59, 130, 246, 0.08) !important;
-        border-left: 4px solid #3b82f6 !important;
-        color: #60a5fa !important;
-    }
-
-    div[data-testid="stNotification"] [data-testid="stNotificationContentWarning"] {
-        background-color: rgba(245, 158, 11, 0.08) !important;
-        border-left: 4px solid #f59e0b !important;
-        color: #fbbf24 !important;
-    }
-
-    div[data-testid="stNotification"] [data-testid="stNotificationContentError"] {
-        background-color: rgba(239, 68, 68, 0.08) !important;
-        border-left: 4px solid #ef4444 !important;
-        color: #f87171 !important;
+        color: #065f46 !important;
     }
 
     /* Styled dataframes */
     div[data-testid="stDataFrame"] {
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
         border-radius: 12px !important;
         overflow: hidden !important;
-        background-color: rgba(30, 41, 59, 0.3) !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015) !important;
     }
 
     /* Detail & Photo Viewer Layout styles */
     .viewer-card {
-        background: rgba(30, 41, 59, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.05);
         border-radius: 16px;
         padding: 24px;
         margin-top: 15px;
-        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
     }
     
     /* Image frames */
     div[data-testid="stImage"] img {
         border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
     }
     
     /* Checkbox labels style */
     div[data-testid="stCheckbox"] label {
         font-weight: 500 !important;
-        color: #cbd5e1 !important;
-    }
-
-    /* Sidebar Radio Navigation as Premium Tabs */
-    div[data-testid="stSidebar"] [data-testid="stRadio"] > label {
-        display: none !important; /* Hide default sidebar radio group header label */
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
-        gap: 12px !important;
-        padding-top: 10px !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label {
-        background: rgba(30, 41, 59, 0.45) !important;
-        border: 1px solid rgba(255, 255, 255, 0.06) !important;
-        border-radius: 12px !important;
-        padding: 14px 18px !important;
-        width: 100% !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        cursor: pointer !important;
-        margin-bottom: 0px !important;
-        display: flex !important;
-        align-items: center !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:hover {
-        background: rgba(99, 102, 241, 0.12) !important;
-        border-color: rgba(99, 102, 241, 0.3) !important;
-        transform: translateX(4px) !important;
-    }
-    /* Hide default radio circle icon */
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label div[data-testid="stWidgetLabel"] > div:first-child {
-        display: none !important;
-    }
-    /* Active State for selected item */
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-        border-color: #6366f1 !important;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3) !important;
-    }
-    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] [data-testid="stMarkdownContainer"] p {
-        color: #ffffff !important;
-        font-weight: 700 !important;
+        color: #475569 !important;
     }
 
     /* Mobile Responsive Optimizations */
@@ -363,6 +354,21 @@ st.markdown("""
         }
     }
 </style>
+""", unsafe_allow_html=True)
+
+# Sidebar Header Logo & Status Box (matching Time:minder theme)
+st.sidebar.markdown("""
+<div class="sidebar-logo">
+    <span style="font-size: 1.5rem;">⏱️</span>
+    <span><strong>Inventory:</strong>minder</span>
+</div>
+<div class="sidebar-status-box">
+    <div style="font-size: 0.8rem; opacity: 0.85; margin-bottom: 4px; font-weight: 500;">Active Session</div>
+    <div style="font-size: 1.15rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+        <span>System Sync</span>
+        <span style="background: #ffffff; color: #9fa6b5; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: default;">II</span>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
 st.title("📦 Advanced Inventory Management System")
