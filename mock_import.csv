@@ -1,0 +1,4 @@
+part_number,item_name,warehouse,bin_location,quantity
+PART-2001,Electronic Sensor Unit,WH-East,Row-C1,45
+PART-2002,Hydraulic Valve Adaptor,WH-West,Row-F2,20
+PART-1001,High-Precision Gear Assembly,WH-Primary,Shelf-A4,10
