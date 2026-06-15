@@ -288,6 +288,46 @@ st.markdown("""
         color: #cbd5e1 !important;
     }
 
+    /* Sidebar Radio Navigation as Premium Tabs */
+    div[data-testid="stSidebar"] [data-testid="stRadio"] > label {
+        display: none !important; /* Hide default sidebar radio group header label */
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
+        gap: 12px !important;
+        padding-top: 10px !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label {
+        background: rgba(30, 41, 59, 0.45) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 12px !important;
+        padding: 14px 18px !important;
+        width: 100% !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+        margin-bottom: 0px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:hover {
+        background: rgba(99, 102, 241, 0.12) !important;
+        border-color: rgba(99, 102, 241, 0.3) !important;
+        transform: translateX(4px) !important;
+    }
+    /* Hide default radio circle icon */
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label div[data-testid="stWidgetLabel"] > div:first-child {
+        display: none !important;
+    }
+    /* Active State for selected item */
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3) !important;
+    }
+    div[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] [data-testid="stMarkdownContainer"] p {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
     /* Mobile Responsive Optimizations */
     @media (max-width: 768px) {
         /* Reduce form padding so it fits screens nicely */
@@ -328,8 +368,16 @@ st.markdown("""
 st.title("📦 Advanced Inventory Management System")
 
 # Sidebar Navigation
-menu = ["View Inventory", "Add / Delete Stock Item", "Stock Transfer Journal"]
-choice = st.sidebar.selectbox("Navigation Menu", menu)
+menu = ["📋 View Inventory", "➕ Add / Delete Stock Item", "🔄 Stock Transfer Journal"]
+choice_raw = st.sidebar.radio("Navigation Menu", menu)
+
+# Map choices back to the original layout names
+choice_map = {
+    "📋 View Inventory": "View Inventory",
+    "➕ Add / Delete Stock Item": "Add / Delete Stock Item",
+    "🔄 Stock Transfer Journal": "Stock Transfer Journal"
+}
+choice = choice_map[choice_raw]
 
 # --- 1. VIEW INVENTORY ---
 if choice == "View Inventory":
@@ -587,7 +635,7 @@ elif choice == "Add / Delete Stock Item":
 elif choice == "Stock Transfer Journal":
     st.header("🔄 Stock Transfer Journal")
     
-    tab1, tab2 = st.tabs(["⚡ Record New Transfer", "📜 View Transfer History"])
+    tab1, tab2, tab3 = st.tabs(["⚡ Record New Transfer", "📜 View Transfer History", "📊 Transfer Analytics"])
     
     conn = get_db_connection()
     c = conn.cursor()
@@ -681,4 +729,54 @@ elif choice == "Stock Transfer Journal":
         else:
             st.dataframe(journal_df, use_container_width=True)
             
+    with tab3:
+        st.subheader("📈 Stock Transfer Analytics by Item")
+        c.execute("SELECT DISTINCT part_number, item_name FROM transfer_journal")
+        transfer_items = c.fetchall()
+        
+        if not transfer_items:
+            st.info("No stock transfers recorded yet. Post a transfer to see analytics!")
+        else:
+            item_options = [f"{row[0]} | {row[1]}" for row in transfer_items]
+            selected_item_str = st.selectbox("Select Item to View Transfer Chart:", item_options)
+            sel_part_no = selected_item_str.split(" | ")[0]
+            
+            df_transfers = pd.read_sql_query('''
+                SELECT voucher_number, from_warehouse, from_bin, to_warehouse, to_bin, quantity, transfer_date 
+                FROM transfer_journal 
+                WHERE part_number = ?
+                ORDER BY transfer_date ASC
+            ''', conn, params=(sel_part_no,))
+            
+            if df_transfers.empty:
+                st.warning("No transfer history found for this item.")
+            else:
+                total_transferred = df_transfers['quantity'].sum()
+                num_transfers = len(df_transfers)
+                max_transfer = df_transfers['quantity'].max()
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Total Units Transferred", f"{total_transferred} pcs")
+                with col2:
+                    st.metric("Total Transfer Transactions", f"{num_transfers} times")
+                with col3:
+                    st.metric("Largest Single Transfer", f"{max_transfer} pcs")
+                
+                st.markdown("### 📅 Quantity Transferred Over Time")
+                df_transfers['Date'] = pd.to_datetime(df_transfers['transfer_date']).dt.strftime('%Y-%m-%d %H:%M')
+                chart_data = df_transfers[['Date', 'quantity']].copy()
+                chart_data = chart_data.rename(columns={'quantity': 'Transferred Quantity'})
+                chart_data = chart_data.set_index('Date')
+                st.bar_chart(chart_data)
+                
+                st.markdown("### 🏢 Destination Warehouse Distribution")
+                dest_data = df_transfers.groupby('to_warehouse')['quantity'].sum().reset_index()
+                dest_data = dest_data.rename(columns={'to_warehouse': 'Destination Warehouse', 'quantity': 'Quantity Received'})
+                dest_data = dest_data.set_index('Destination Warehouse')
+                st.bar_chart(dest_data)
+                
+                st.markdown("### 📋 History Log for this Item")
+                st.dataframe(df_transfers, use_container_width=True)
+                
     conn.close()
